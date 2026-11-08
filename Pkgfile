@@ -10,13 +10,11 @@ vars:
 
   # renovate: datasource=github-tags extractVersion=^v(?<version>.*)$ depName=u-boot/u-boot
   uboot_version: 2026.01
-  uboot_sha256: 03bb43c58d2343ee48dd191e0f181f0108425b179d84519add3a977071c3f654
-  uboot_sha512: bf621285c526afbd22886ace2f04554dad3edc0b0d3c1bd095a851abe6e78676d1197904670a02e745959d83825bc798136970b9b1b87759c1891e4e77e11c01
+  uboot_commit: 127a42c7257a6ffbbd1575ed1cbaa8f5408a44b3
 
   # renovate: datasource=github-tags depName=talos-rpi5/u-boot
   uboot_rpi5_version: v2026.10-rpi5-1
-  uboot_rpi5_sha256: d18141d5018f14e0105d6463d21cb0b10466295e9d7543984abe2ff1b8106a2f
-  uboot_rpi5_sha512: e5d695646e56ea4581ff6e4085ac18b7ee8743e45fe783c6c8f099debb9dbf849632e26b62a0e789b1fbb8fefe1c1fb9cba266e26e6fae49431ea1f36c118773
+  uboot_rpi5_commit: 5e7c595633ae308a37f59e4fa12946e3a6500a9e
 
   # renovate: datasource=github-tags depName=raspberrypi/linux
   raspberrypi_kernel_version: stable_20260724

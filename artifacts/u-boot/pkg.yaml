@@ -9,16 +9,15 @@ shell: /bin/bash
 dependencies:
   - stage: base
 steps:
-  - sources:
-      - url: https://github.com/u-boot/u-boot/archive/refs/tags/v{{ .uboot_version }}.tar.gz
-        destination: u-boot.tar.gz
-        sha256: "{{ .uboot_sha256 }}"
-        sha512: "{{ .uboot_sha512 }}"
-    env:
+  - env:
       SOURCE_DATE_EPOCH: {{ .BUILD_ARG_SOURCE_DATE_EPOCH }}
+      UBOOT_VERSION: "{{ .uboot_version }}"
+      UBOOT_COMMIT: "{{ .uboot_commit }}"
+    network: default
     prepare:
       - |
-        tar xf u-boot.tar.gz --strip-components=1
+        git clone --quiet --depth 1 --branch "v${UBOOT_VERSION}" https://github.com/u-boot/u-boot .
+        test "$(git rev-parse HEAD)" = "${UBOOT_COMMIT}"
       # rpi_generic (built with rpi_arm64_defconfig, which "uses the device-tree provided by the firmware")
       - |
         patch -p1 < /pkg/patches/0002-rpi-add-NVMe-to-boot-order.patch
@@ -39,18 +38,16 @@ steps:
       - |
         mkdir -p /rootfs/artifacts/arm64/u-boot/rpi_generic
         cp -v u-boot.bin /rootfs/artifacts/arm64/u-boot/rpi_generic
-  - sources:
-      - url: https://github.com/talos-rpi5/u-boot/archive/refs/tags/{{ .uboot_rpi5_version }}.tar.gz
-        destination: u-boot-rpi5.tar.gz
-        sha256: "{{ .uboot_rpi5_sha256 }}"
-        sha512: "{{ .uboot_rpi5_sha512 }}"
-    env:
+  - env:
       SOURCE_DATE_EPOCH: {{ .BUILD_ARG_SOURCE_DATE_EPOCH }}
+      UBOOT_RPI5_VERSION: "{{ .uboot_rpi5_version }}"
+      UBOOT_RPI5_COMMIT: "{{ .uboot_rpi5_commit }}"
+    network: default
     prepare:
       # rpi_5: talos-rpi5 fork with BCM2712 PCIe, RP1 and NVMe DMA support, built with rpi_5_defconfig
       - |
-        mkdir rpi_5
-        tar xf u-boot-rpi5.tar.gz --strip-components=1 -C rpi_5
+        git clone --quiet --depth 1 --branch "${UBOOT_RPI5_VERSION}" https://github.com/talos-rpi5/u-boot rpi_5
+        test "$(git -C rpi_5 rev-parse HEAD)" = "${UBOOT_RPI5_COMMIT}"
       - |
         cd rpi_5
         sed -i "s/^boot_targets=mmc usb pxe dhcp$/boot_targets=mmc nvme usb pxe dhcp/" board/raspberrypi/rpi/rpi.env
