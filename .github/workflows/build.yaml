@@ -1,0 +1,75 @@
+name: build
+'on':
+  push:
+    branches:
+      - main
+      - rpi5-nvme
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      talos_version:
+        description: Talos release to run the imager with
+        default: v1.14.5
+        required: true
+env:
+  TALOS_VERSION: ${{ inputs.talos_version || 'v1.14.5' }}
+  PKGS: v1.14.0-48-gf4bda77
+  TOOLS: v1.14.0-11-g8dad45e
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: variables
+        run: |
+          echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=$(git describe --tag --always --dirty --match 'v[0-9]*')" >> "$GITHUB_ENV"
+      - name: buildx
+        uses: docker/setup-buildx-action@v3
+      - name: login
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: overlay
+        run: |
+          make PUSH=true PLATFORM=linux/arm64 USERNAME="$OWNER" TAG="$IMAGE_TAG" PKGS="$PKGS" TOOLS="$TOOLS"
+      - name: installer
+        run: |
+          mkdir -p _out
+          docker run --rm -v "$PWD/_out:/out" "ghcr.io/siderolabs/imager:$TALOS_VERSION" \
+            installer --arch arm64 --overlay-name rpi_5 \
+            --overlay-image "ghcr.io/$OWNER/sbc-raspberrypi:$IMAGE_TAG"
+      - name: crane
+        uses: imjasonh/setup-crane@v0.4
+      - name: push installer
+        run: |
+          crane auth login ghcr.io -u "$OWNER" -p "${{ secrets.GITHUB_TOKEN }}"
+          crane push _out/installer-arm64.tar "ghcr.io/$OWNER/talos-rpi5-installer:$TALOS_VERSION-$IMAGE_TAG"
+          crane tag "ghcr.io/$OWNER/talos-rpi5-installer:$TALOS_VERSION-$IMAGE_TAG" "$TALOS_VERSION"
+      - name: raw image
+        run: |
+          docker run --rm --privileged -v /dev:/dev -v "$PWD/_out:/out" "ghcr.io/siderolabs/imager:$TALOS_VERSION" \
+            rpi_5 --arch arm64 --overlay-name rpi_5 \
+            --overlay-image "ghcr.io/$OWNER/sbc-raspberrypi:$IMAGE_TAG"
+          ls -la _out
+      - name: upload raw image
+        uses: actions/upload-artifact@v4
+        with:
+          name: talos-rpi5-${{ env.TALOS_VERSION }}-${{ env.IMAGE_TAG }}
+          path: _out/*.raw.xz
+          retention-days: 14
+      - name: release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: _out/*.raw.xz
+          draft: true

@@ -39,6 +39,37 @@ steps:
       - |
         mkdir -p /rootfs/artifacts/arm64/u-boot/rpi_generic
         cp -v u-boot.bin /rootfs/artifacts/arm64/u-boot/rpi_generic
+  - sources:
+      - url: https://github.com/talos-rpi5/u-boot/archive/refs/tags/{{ .uboot_rpi5_version }}.tar.gz
+        destination: u-boot-rpi5.tar.gz
+        sha256: "{{ .uboot_rpi5_sha256 }}"
+        sha512: "{{ .uboot_rpi5_sha512 }}"
+    env:
+      SOURCE_DATE_EPOCH: {{ .BUILD_ARG_SOURCE_DATE_EPOCH }}
+    prepare:
+      # rpi_5: talos-rpi5 fork with BCM2712 PCIe, RP1 and NVMe DMA support, built with rpi_5_defconfig
+      - |
+        mkdir rpi_5
+        tar xf u-boot-rpi5.tar.gz --strip-components=1 -C rpi_5
+      - |
+        cd rpi_5
+        sed -i "s/^boot_targets=mmc usb pxe dhcp$/boot_targets=mmc nvme usb pxe dhcp/" board/raspberrypi/rpi/rpi.env
+        grep -q "^boot_targets=mmc nvme " board/raspberrypi/rpi/rpi.env
+
+        make rpi_5_defconfig
+        # host tools only, the toolchain OpenSSL lacks the ENGINE API these need
+        ./scripts/config --disable TOOLS_LIBCRYPTO --disable TOOLS_KWBIMAGE --disable TOOLS_MKEFICAPSULE
+        make olddefconfig
+    build:
+      # rpi_5
+      - |
+        cd rpi_5
+        make -j $(nproc) HOSTLDLIBS_mkimage="-lssl -lcrypto" u-boot.bin
+    install:
+      # rpi_5
+      - |
+        mkdir -p /rootfs/artifacts/arm64/u-boot/rpi_5
+        cp -v rpi_5/u-boot.bin /rootfs/artifacts/arm64/u-boot/rpi_5
 finalize:
   - from: /rootfs
     to: /rootfs

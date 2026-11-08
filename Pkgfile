@@ -13,6 +13,11 @@ vars:
   uboot_sha256: b60d5865cefdbc75da8da4156c56c458e00de75a49b80c1a2e58a96e30ad0d54
   uboot_sha512: b1f988a497c77da60faf89ed33034e9ae58c4cd7f208e5ce451f1372e13540a66289bee4f08ca2f68f105d73f1ceae058b1f713db549edbcc885d9c66bdc4f8b
 
+  # renovate: datasource=github-tags depName=talos-rpi5/u-boot
+  uboot_rpi5_version: v2026.10-rpi5-1
+  uboot_rpi5_sha256: d18141d5018f14e0105d6463d21cb0b10466295e9d7543984abe2ff1b8106a2f
+  uboot_rpi5_sha512: e5d695646e56ea4581ff6e4085ac18b7ee8743e45fe783c6c8f099debb9dbf849632e26b62a0e789b1fbb8fefe1c1fb9cba266e26e6fae49431ea1f36c118773
+
   # renovate: datasource=github-tags depName=raspberrypi/linux
   raspberrypi_kernel_version: stable_20260724
   raspberrypi_kernel_sha256: ed379d946780441248e5636a41d56fee11161f474025d4216a9fe037daef1b25
@@ -24,4 +29,4 @@ vars:
   revpi_kernel_sha512: 683684333616c99f9b08e7465041862b01056840f4eb3eb9cc2a957d69f3b86cbf98c23199a8d1c5d919944233f9c866d6467a2a6aa965fb6c77621eb96a7fe2
 
 labels:
-  org.opencontainers.image.source: https://github.com/siderolabs/sbc-raspberrypi
+  org.opencontainers.image.source: https://github.com/Jaturu/sbc-raspberrypi
