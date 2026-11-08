@@ -10,8 +10,8 @@ vars:
 
   # renovate: datasource=github-tags extractVersion=^v(?<version>.*)$ depName=u-boot/u-boot
   uboot_version: 2026.01
-  uboot_sha256: b60d5865cefdbc75da8da4156c56c458e00de75a49b80c1a2e58a96e30ad0d54
-  uboot_sha512: b1f988a497c77da60faf89ed33034e9ae58c4cd7f208e5ce451f1372e13540a66289bee4f08ca2f68f105d73f1ceae058b1f713db549edbcc885d9c66bdc4f8b
+  uboot_sha256: 03bb43c58d2343ee48dd191e0f181f0108425b179d84519add3a977071c3f654
+  uboot_sha512: bf621285c526afbd22886ace2f04554dad3edc0b0d3c1bd095a851abe6e78676d1197904670a02e745959d83825bc798136970b9b1b87759c1891e4e77e11c01
 
   # renovate: datasource=github-tags depName=talos-rpi5/u-boot
   uboot_rpi5_version: v2026.10-rpi5-1
